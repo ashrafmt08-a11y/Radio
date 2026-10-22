@@ -506,7 +506,7 @@ export function GridView({
         cls: '',
         style: fmt ? { background: fmt.color, color: '#0b0d11' } : undefined,
         label: fmt ? abbreviate(fmt.name) : '',
-        title: fmt?.name ?? ''
+        title: fmt ? `${fmt.name} — right-click to remove` : ''
       }
     }
     if (layer === 'blocked') {
@@ -903,10 +903,18 @@ export function GridView({
                             style={c.style}
                             title={c.title}
                             onMouseDown={(e) => {
+                              if (e.button !== 0) return
                               e.preventDefault()
                               cellDown(wd, hour)
                             }}
                             onMouseEnter={() => cellEnter(wd, hour)}
+                            onContextMenu={(e) => {
+                              if (layer !== 'clocks') return
+                              e.preventDefault()
+                              if (set.grid.cells[wd]?.[hour] == null) return
+                              setSel({ wd, hour })
+                              assign(wd, hour, null)
+                            }}
                           >
                             {c.label}
                           </td>
@@ -1055,7 +1063,7 @@ export function GridView({
                   <span className="kick">Azan — {WEEKDAY_FULL[sel.wd]}</span>
                   <button
                     className={`chip ${config?.includeAzan ? 'on' : ''}`}
-                    title="Include the 5 daily azan rows in exported logs"
+                    title="Include the 5 daily prayer-time rows in exported logs"
                     onClick={async () => {
                       if (config) setConfig(await window.api.setIncludeAzan(!config.includeAzan))
                     }}
@@ -1074,10 +1082,10 @@ export function GridView({
                 )}
                 <button
                   className="btn"
-                  title="The azan format is edited in Settings"
+                  title="The prayer rows are edited in Settings"
                   onClick={onOpenSettings}
                 >
-                  Edit azan format
+                  Edit prayer rows
                 </button>
               </div>
 
